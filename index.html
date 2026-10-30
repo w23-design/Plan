@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- Apple Specific Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Plan Zajęć">
+  <title>Plan zajęć - Logistyka</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'Segoe UI', 'Roboto', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              400: '#38bdf8',
+              500: '#0e7490',
+              600: '#0284c7',
+              700: '#0369a1',
+              900: '#0c4a6e',
+              950: '#082f49',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #020617;
+      color: #f8fafc;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-area {
+        background-color: #ffffff !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      .class-card {
+        border: 1px solid #e2e8f0 !important;
+        color: #000 !important;
+        background-color: #ffffff !important;
+        break-inside: avoid;
+      }
+      .class-card .text-slate-400,
+      .class-card .text-slate-500 {
+        color: #475569 !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-sky-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="no-print bg-slate-900/80 backdrop-blur-md border-b border-sky-900/40 sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-gradient-to-tr from-sky-600 to-indigo-600 rounded-xl shadow-lg shadow-sky-500/20 text-white">
+          <i class="fa-solid fa-list-ul text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-300 bg-clip-text text-transparent">
+            Plan Zajęć
+          </h1>
+          <p class="text-xs text-slate-400">Grupa 2 ćw. - 3 lab.</p>
+        </div>
+      </div>
+
+      <!-- Parity Switcher -->
+      <div class="bg-slate-950 p-1.5 rounded-2xl border border-slate-800 flex items-center shadow-inner">
+        <span class="text-xs text-slate-400 px-2 font-medium hidden sm:inline">Tydzień:</span>
+        <button id="parityOddBtn" class="px-4 py-2 text-xs font-semibold rounded-xl transition-all text-white bg-gradient-to-r from-sky-600 to-blue-600 shadow-md flex items-center gap-2">
+          <i class="fa-solid fa-1"></i> Nieparzysty
+        </button>
+        <button id="parityEvenBtn" class="px-4 py-2 text-xs font-semibold rounded-xl text-slate-400 hover:text-white transition-all flex items-center gap-2">
+          <i class="fa-solid fa-2"></i> Parzysty
+        </button>
+      </div>
+
+      <!-- Main Controls -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="openModalBtn" class="px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-500/20 flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer">
+          <i class="fa-solid fa-plus"></i>
+          <span class="hidden sm:inline">Dodaj</span>
+        </button>
+
+        <div class="h-6 w-[1px] bg-slate-800 mx-1 hidden sm:block"></div>
+
+        <button id="exportBtn" title="Eksportuj plan" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700/50 transition-all cursor-pointer">
+          <i class="fa-solid fa-download"></i>
+        </button>
+        
+        <label title="Importuj plan" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700/50 cursor-pointer transition-all">
+          <i class="fa-solid fa-upload"></i>
+          <input type="file" id="importInput" accept=".json" class="hidden">
+        </label>
+
+        <button onclick="window.print()" title="Drukuj (⌘+P)" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700/50 transition-all cursor-pointer">
+          <i class="fa-solid fa-print"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filter Bar -->
+  <div class="no-print border-b border-slate-800/80 px-4 py-3 bg-slate-900/40">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="relative w-full sm:w-80">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+        <input type="text" id="searchInput" placeholder="Szukaj przedmiotu, sali..." 
+          class="w-full pl-10 pr-4 py-2 bg-slate-950/50 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors">
+      </div>
+      <span id="activeParityIndicator" class="hidden sm:block px-3 py-1 rounded-full bg-sky-950/50 text-sky-400 border border-sky-900/50 text-xs font-medium tracking-wide">
+        Pokazuję: Tydzień nieparzysty
+      </span>
+    </div>
+  </div>
+
+  <!-- Content / Minimalist List -->
+  <main class="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 lg:py-10">
+    <div class="print-area">
+      <!-- Container for flying tiles -->
+      <div id="classesList" class="space-y-10">
+        <!-- JS generated content -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Add/Edit Modal -->
+  <div id="classModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      
+      <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
+        <h3 id="modalTitle" class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-book-bookmark text-sky-400"></i>
+          <span>Dodaj zajęcia</span>
+        </h3>
+        <button id="closeModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <form id="classForm" class="space-y-4">
+        <input type="hidden" id="classId">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nazwa przedmiotu *</label>
+          <input type="text" id="className" required placeholder="np. Matematyka Dyskretna"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition-colors">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Typ tygodnia *</label>
+          <select id="classParity" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500 transition-colors cursor-pointer">
+            <option value="both">Oba tygodnie (parzysty i nieparzysty)</option>
+            <option value="odd">Tylko tydzień nieparzysty</option>
+            <option value="even">Tylko tydzień parzysty</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Dzień *</label>
+            <select id="classDay" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500 transition-colors cursor-pointer">
+              <option value="1">Poniedziałek</option>
+              <option value="2">Wtorek</option>
+              <option value="3">Środa</option>
+              <option value="4">Czwartek</option>
+              <option value="5">Piątek</option>
+              <option value="6">Sobota</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Sala</label>
+            <input type="text" id="classRoom" placeholder="np. 204 A"
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition-colors">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Początek *</label>
+            <input type="time" id="classStartTime" required
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500 transition-colors cursor-pointer">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Koniec *</label>
+            <input type="time" id="classEndTime" required
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500 transition-colors cursor-pointer">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Prowadzący</label>
+          <input type="text" id="classTeacher" placeholder="np. dr Jan Kowalski"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition-colors">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Kolor</label>
+          <div class="flex items-center gap-3" id="colorPickerContainer"></div>
+          <input type="hidden" id="classColor" value="sky">
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-6">
+          <button type="button" id="cancelBtn" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold rounded-xl transition-colors cursor-pointer">
+            Anuluj
+          </button>
+          <button type="submit" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-600/30 transition-all cursor-pointer">
+            Zapisz
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <script>
+    // Config & Data - TWÓJ OFICJALNY PLAN ZAJĘĆ
+    // (Usunięto localStorage przy starcie, więc strona zawsze u każdego wczyta te dane)
+    let classes = [
+      {
+        "id": "1793361093103",
+        "name": "Fizyka - wykład",
+        "parity": "both",
+        "day": 1,
+        "startTime": "08:15",
+        "endTime": "10:00",
+        "room": "B9 - oz329",
+        "teacher": "dr inż. D. Krzyżański",
+        "color": "sky"
+      },
+      {
+        "id": "1793361298097",
+        "name": "Matematyka (Algebra) - ćwiczenia ",
+        "parity": "both",
+        "day": 1,
+        "startTime": "10:15",
+        "endTime": "12:00",
+        "room": "B17 - 1.11",
+        "teacher": "dr A. Kubiś-Lipowska",
+        "color": "sky"
+      },
+      {
+        "id": "1793361379013",
+        "name": "Zarządzanie - ćwiczenia ",
+        "parity": "both",
+        "day": 1,
+        "startTime": "12:15",
+        "endTime": "14:00",
+        "room": "B17 - 0.21",
+        "teacher": "dr inż. S. Flaszewska",
+        "color": "sky"
+      },
+      {
+        "id": "1793361459350",
+        "name": "Matematyka (Algebra) - wykład ",
+        "parity": "odd",
+        "day": 1,
+        "startTime": "16:15",
+        "endTime": "18:00",
+        "room": "B9 - oz329",
+        "teacher": "dr A. Kubiś - Lipowska ",
+        "color": "sky"
+      },
+      {
+        "id": "1793361520117",
+        "name": "Matematyka (AM) - wykład ",
+        "parity": "even",
+        "day": 1,
+        "startTime": "16:15",
+        "endTime": "18:00",
+        "room": "B9 - 329",
+        "teacher": "dr A. Lipowski ",
+        "color": "indigo"
+      },
+      {
+        "id": "1793361684166",
+        "name": "Zarządzanie - wykład",
+        "parity": "both",
+        "day": 2,
+        "startTime": "10:15",
+        "endTime": "12:00",
+        "room": "B9 - oz329",
+        "teacher": "dr hab. inż. K. Szymańska",
+        "color": "blue"
+      },
+      {
+        "id": "1793361789815",
+        "name": "Podstawy Logistyki - wykład ",
+        "parity": "both",
+        "day": 2,
+        "startTime": "12:15",
+        "endTime": "14:00",
+        "room": "B9 - oz329",
+        "teacher": "dr hab. R. Stanisławski, prof. ucz.",
+        "color": "blue"
+      },
+      {
+        "id": "1793361863262",
+        "name": "Matematyka (AM) - ćwiczenia ",
+        "parity": "both",
+        "day": 2,
+        "startTime": "14:15",
+        "endTime": "16:00",
+        "room": "B17 - 1.20A",
+        "teacher": "dr A. Lipowski ",
+        "color": "blue"
+      },
+      {
+        "id": "1793361923796",
+        "name": "Podstawy Logistyki - ćwiczenia ",
+        "parity": "both",
+        "day": 2,
+        "startTime": "16:15",
+        "endTime": "18:00",
+        "room": "B9 - oz126",
+        "teacher": "dr hab. R. Stanisławski ",
+        "color": "blue"
+      },
+      {
+        "id": "1793362004134",
+        "name": "Grafika inżynierska - wykład ",
+        "parity": "both",
+        "day": 4,
+        "startTime": "12:15",
+        "endTime": "14:00",
+        "room": "B9 - oz329",
+        "teacher": "dr inż. J. Gralewski ",
+        "color": "indigo"
+      },
+      {
+        "id": "1793362127446",
+        "name": "Grafika inżynierska - ćwiczenia ",
+        "parity": "both",
+        "day": 4,
+        "startTime": "14:15",
+        "endTime": "17:00",
+        "room": "B17 - ",
+        "teacher": "mgr. inż. D. Walisiak",
+        "color": "indigo"
+      },
+      {
+        "id": "1793362199933",
+        "name": "Ekonomia - ćwiczenia ",
+        "parity": "both",
+        "day": 5,
+        "startTime": "08:15",
+        "endTime": "10:00",
+        "room": "B9 - oz124A",
+        "teacher": "dr A. Ścianowska ",
+        "color": "cyan"
+      },
+      {
+        "id": "1793362267582",
+        "name": "Ekonomia - wykład ",
+        "parity": "both",
+        "day": 5,
+        "startTime": "10:15",
+        "endTime": "12:00",
+        "room": "B9 - oz329",
+        "teacher": "dr hab. D. Siudak, prof. ucz.",
+        "color": "cyan"
+      },
+      {
+        "id": "1793362344383",
+        "name": "Cyfryzacja i Cyberbezpieczeństwo ",
+        "parity": "odd",
+        "day": 5,
+        "startTime": "14:15",
+        "endTime": "16:00",
+        "room": "B17 - 1.16A",
+        "teacher": "mgr. inż. J. Fryczak",
+        "color": "cyan"
+      },
+      {
+        "id": "1793362425435",
+        "name": "Fizyka - Laboratorium ",
+        "parity": "both",
+        "day": 5,
+        "startTime": "16:45",
+        "endTime": "19:00",
+        "room": "A3 - s9",
+        "teacher": "-",
+        "color": "cyan"
+      }
+    ];
+
+    let currentParity = 'odd';
+    let searchQuery = '';
+
+    const colorThemes = {
+      sky: { border: 'border-sky-500/30', text: 'text-sky-400', tag: 'bg-sky-500', shadow: 'hover:shadow-sky-500/10' },
+      blue: { border: 'border-blue-500/30', text: 'text-blue-400', tag: 'bg-blue-500', shadow: 'hover:shadow-blue-500/10' },
+      indigo: { border: 'border-indigo-500/30', text: 'text-indigo-400', tag: 'bg-indigo-500', shadow: 'hover:shadow-indigo-500/10' },
+      cyan: { border: 'border-cyan-500/30', text: 'text-cyan-400', tag: 'bg-cyan-500', shadow: 'hover:shadow-cyan-500/10' },
+      teal: { border: 'border-teal-500/30', text: 'text-teal-400', tag: 'bg-teal-500', shadow: 'hover:shadow-teal-500/10' }
+    };
+
+    const daysMap = {
+      1: 'Poniedziałek', 2: 'Wtorek', 3: 'Środa', 4: 'Czwartek', 5: 'Piątek', 6: 'Sobota'
+    };
+
+    // DOM Elements
+    const classesList = document.getElementById('classesList');
+    const parityOddBtn = document.getElementById('parityOddBtn');
+    const parityEvenBtn = document.getElementById('parityEvenBtn');
+    const activeParityIndicator = document.getElementById('activeParityIndicator');
+    const modal = document.getElementById('classModal');
+    const form = document.getElementById('classForm');
+    const searchInput = document.getElementById('searchInput');
+
+    // Init App
+    function init() {
+      setupColorPicker();
+      renderList();
+      setupEventListeners();
+    }
+
+    function setupColorPicker() {
+      const container = document.getElementById('colorPickerContainer');
+      container.innerHTML = '';
+      Object.keys(colorThemes).forEach((color, index) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `w-7 h-7 rounded-full ${colorThemes[color].tag} border-2 ${index === 0 ? 'border-white scale-110' : 'border-transparent'} transition-all cursor-pointer`;
+        btn.onclick = () => {
+          document.querySelectorAll('#colorPickerContainer button').forEach(b => b.classList.replace('border-white', 'border-transparent'));
+          btn.classList.replace('border-transparent', 'border-white');
+          document.getElementById('classColor').value = color;
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    // Main render function for Minimalist view
+    function renderList() {
+      classesList.innerHTML = '';
+      const daysToRender = [1, 2, 3, 4, 5, 6];
+      let totalRendered = 0;
+
+      daysToRender.forEach(dayIndex => {
+        // Filter classes for this day + parity + search
+        const dayClasses = classes.filter(c => {
+          if (c.day !== dayIndex) return false;
+          const itemParity = c.parity || 'both';
+          if (itemParity !== 'both' && itemParity !== currentParity) return false;
+          
+          if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            const nameMatch = c.name.toLowerCase().includes(query);
+            const roomMatch = c.room && c.room.toLowerCase().includes(query);
+            const teacherMatch = c.teacher && c.teacher.toLowerCase().includes(query);
+            if (!nameMatch && !roomMatch && !teacherMatch) return false;
+          }
+          return true;
+        });
+
+        // If day has classes, draw them
+        if (dayClasses.length > 0) {
+          // Sort chronologically
+          dayClasses.sort((a, b) => a.startTime.localeCompare(b.startTime));
+          totalRendered += dayClasses.length;
+
+          const daySection = document.createElement('div');
+          
+          // Header of the day
+          const dayHeader = document.createElement('h2');
+          dayHeader.className = 'text-xl sm:text-2xl font-bold text-slate-100 flex items-center gap-3 mb-6';
+          dayHeader.innerHTML = `
+            <span class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-sky-400 text-sm"><i class="fa-solid fa-calendar-day"></i></span>
+            ${daysMap[dayIndex]}
+          `;
+          daySection.appendChild(dayHeader);
+
+          // Container for cards in this day (column wrapper)
+          const tilesContainer = document.createElement('div');
+          tilesContainer.className = 'space-y-4 pl-4 sm:pl-12 border-l-2 border-slate-800/60 relative';
+          
+          dayClasses.forEach(item => {
+            tilesContainer.appendChild(createTileCard(item));
+          });
+
+          daySection.appendChild(tilesContainer);
+          classesList.appendChild(daySection);
+        }
+      });
+
+      // Empty State
+      if (totalRendered === 0) {
+        classesList.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-20 text-slate-500">
+            <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center mb-4">
+              <i class="fa-regular fa-folder-open text-3xl opacity-50"></i>
+            </div>
+            <p class="text-lg">Brak zajęć w tym widoku</p>
+            <p class="text-sm mt-1 opacity-70">Dodaj nowe lub zmień filtry wyszukiwania.</p>
+          </div>
+        `;
+      }
+    }
+
+    function createTileCard(item) {
+      const theme = colorThemes[item.color] || colorThemes.sky;
+      const card = document.createElement('div');
+      
+      let parityInfo = '';
+      if (item.parity === 'odd') {
+        parityInfo = `<span class="text-[10px] bg-sky-500/10 text-sky-400 px-2 py-0.5 rounded border border-sky-500/20 font-semibold tracking-wide uppercase">Nieparzysty</span>`;
+      } else if (item.parity === 'even') {
+        parityInfo = `<span class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 font-semibold tracking-wide uppercase">Parzysty</span>`;
+      }
+
+      card.className = `class-card group relative bg-slate-900/50 backdrop-blur-sm border ${theme.border} rounded-2xl p-5 shadow-lg ${theme.shadow} hover:-translate-y-1 hover:bg-slate-900 transition-all duration-300 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6`;
+
+      card.innerHTML = `
+        <!-- Minimalist Left Indicator -->
+        <div class="absolute -left-[1px] top-1/2 -translate-y-1/2 w-1 h-12 ${theme.tag} rounded-r-md"></div>
+        
+        <!-- Time Section -->
+        <div class="flex-shrink-0 flex items-center sm:block sm:w-28 text-slate-400 gap-2">
+          <div class="text-xl sm:text-2xl font-bold ${theme.text} font-mono leading-none tracking-tight">${item.startTime}</div>
+          <div class="text-sm font-mono opacity-60 hidden sm:block mt-1">${item.endTime}</div>
+          <div class="text-sm font-mono sm:hidden opacity-60">- ${item.endTime}</div>
+        </div>
+
+        <!-- Description Section -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-3 flex-wrap mb-1.5">
+            <h3 class="text-lg font-bold text-slate-100 truncate">${escapeHtml(item.name)}</h3>
+            ${parityInfo}
+          </div>
+          
+          <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400">
+            ${item.room ? `
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-location-dot text-slate-600"></i>
+                <span class="text-slate-300 font-medium">${escapeHtml(item.room)}</span>
+              </div>
+            ` : ''}
+            ${item.teacher ? `
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-user-tie text-slate-600"></i>
+                <span>${escapeHtml(item.teacher)}</span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- Action Buttons (Hover) -->
+        <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 no-print absolute sm:relative top-4 right-4 sm:top-auto sm:right-auto bg-slate-900 sm:bg-transparent p-1.5 sm:p-0 rounded-xl shadow-lg sm:shadow-none border border-slate-800 sm:border-none">
+          <button onclick="editClass('${item.id}', event)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-sky-300 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer" title="Edytuj">
+            <i class="fa-solid fa-pen text-sm"></i>
+          </button>
+          <button onclick="deleteClass('${item.id}', event)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer" title="Usuń">
+            <i class="fa-solid fa-trash text-sm"></i>
+          </button>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // Modals & Forms handling
+    function openModal(isEdit = false) {
+      document.getElementById('modalTitle').querySelector('span').innerText = isEdit ? 'Edytuj zajęcia' : 'Dodaj zajęcia';
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      form.reset();
+      document.getElementById('classId').value = '';
+    }
+
+    form.onsubmit = (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById('classId').value || Date.now().toString();
+      const newClass = {
+        id,
+        name: document.getElementById('className').value,
+        parity: document.getElementById('classParity').value,
+        day: parseInt(document.getElementById('classDay').value),
+        startTime: document.getElementById('classStartTime').value,
+        endTime: document.getElementById('classEndTime').value,
+        room: document.getElementById('classRoom').value,
+        teacher: document.getElementById('classTeacher').value,
+        color: document.getElementById('classColor').value
+      };
+
+      const existingIndex = classes.findIndex(c => c.id === id);
+      if (existingIndex > -1) {
+        classes[existingIndex] = newClass;
+      } else {
+        classes.push(newClass);
+      }
+
+      saveAndRefresh();
+      closeModal();
+    };
+
+    window.editClass = (id, e) => {
+      e.stopPropagation();
+      const item = classes.find(c => c.id === id);
+      if (!item) return;
+
+      document.getElementById('classId').value = item.id;
+      document.getElementById('className').value = item.name;
+      document.getElementById('classParity').value = item.parity || 'both';
+      document.getElementById('classDay').value = item.day;
+      document.getElementById('classStartTime').value = item.startTime;
+      document.getElementById('classEndTime').value = item.endTime;
+      document.getElementById('classRoom').value = item.room || '';
+      document.getElementById('classTeacher').value = item.teacher || '';
+      document.getElementById('classColor').value = item.color || 'sky';
+
+      openModal(true);
+    };
+
+    window.deleteClass = (id, e) => {
+      e.stopPropagation();
+      if (confirm('Czy na pewno chcesz usunąć te zajęcia?')) {
+        classes = classes.filter(c => c.id !== id);
+        saveAndRefresh();
+      }
+    };
+
+    function saveAndRefresh() {
+      renderList();
+    }
+
+    function setupEventListeners() {
+      document.getElementById('openModalBtn').onclick = () => openModal(false);
+      document.getElementById('closeModalBtn').onclick = closeModal;
+      document.getElementById('cancelBtn').onclick = closeModal;
+
+      parityOddBtn.onclick = () => {
+        currentParity = 'odd';
+        parityOddBtn.className = 'px-4 py-2 text-xs font-semibold rounded-xl transition-all text-white bg-gradient-to-r from-sky-600 to-blue-600 shadow-md flex items-center gap-2';
+        parityEvenBtn.className = 'px-4 py-2 text-xs font-semibold rounded-xl text-slate-400 hover:text-white transition-all flex items-center gap-2';
+        activeParityIndicator.innerText = 'Pokazuję: Tydzień nieparzysty';
+        renderList();
+      };
+
+      parityEvenBtn.onclick = () => {
+        currentParity = 'even';
+        parityEvenBtn.className = 'px-4 py-2 text-xs font-semibold rounded-xl transition-all text-white bg-gradient-to-r from-indigo-600 to-blue-600 shadow-md flex items-center gap-2';
+        parityOddBtn.className = 'px-4 py-2 text-xs font-semibold rounded-xl text-slate-400 hover:text-white transition-all flex items-center gap-2';
+        activeParityIndicator.innerText = 'Pokazuję: Tydzień parzysty';
+        renderList();
+      };
+
+      searchInput.oninput = (e) => {
+        searchQuery = e.target.value;
+        renderList();
+      };
+
+      document.getElementById('exportBtn').onclick = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(classes, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `plan_minimalistyczny_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+      };
+
+      document.getElementById('importInput').onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const importedData = JSON.parse(event.target.result);
+            if (Array.isArray(importedData)) {
+              classes = importedData;
+              saveAndRefresh();
+              alert('Plan pomyślnie zaimportowany!');
+            }
+          } catch (err) {
+            alert('Błąd podczas wczytywania pliku JSON.');
+          }
+        };
+        reader.readAsText(file);
+      };
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    init();
+  </script>
+</body>
+</html>ś
